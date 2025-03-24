@@ -6089,8 +6089,7 @@ Main Header
   padding: 25px 0;
   margin-right: 100px;
   transition: all 300ms ease;
-  max-width: 154px;
-  height: 60px; /* Default height for desktop */
+  max-width: 154px; /* Default height for desktop */
 }
 
 @media (max-width: 768px) { /* Adjust the breakpoint as needed for mobile */
@@ -6754,7 +6753,7 @@ Mobile Header
 }
 
 .mobile-header .logo img {
-  max-height: 50px;
+  max-height: 30px;
 }
 
 .mobile-header .nav-outer {
@@ -6784,6 +6783,7 @@ Mobile Header
 .mobile-header .cart-btn > a,
 .mobile-header .login-box {
   margin-left: 20px;
+  display: flex;
 }
 
 .nav-outer .mobile-nav-toggler {
@@ -6848,7 +6848,9 @@ Mobile Header
 
 .mobile-header .login-box a {
   color: #202124;
-  font-size: 20px;
+  font-size: 30px;
+  margin-top: 5px;
+  margin-left: 10px;
 }
 
 /*** 

@@ -6,15 +6,15 @@
       <div class="form-inner">
         <h3>Login to VTA</h3>
         <!--Login Form-->
-        <form method="post" action="add-parcel.html">
+        <form method="post" >
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Username" required>
+            <label>Email</label>
+            <input type="email" id="email" name="email" placeholder="Email" required>
           </div>
-
+    
           <div class="form-group">
             <label>Password</label>
-            <input id="password-field" type="password" name="password" value="" placeholder="Password">
+            <input id="password" type="password" name="password" placeholder="Password" required>
           </div>
 
           <div class="form-group">
@@ -31,6 +31,7 @@
             <button class="theme-btn btn-style-one" type="submit" name="log-in">Log In</button>
           </div>
         </form>
+        <div id="messageBox"></div> <!-- Error message box -->
 
         <div class="bottom-box">
           <div class="text">Don't have an account? <a href="register-popup.html" class="call-modal signup">Signup</a></div>
@@ -49,6 +50,38 @@
     <!--End Login Form -->
   </div>
   <!-- End Login Module -->
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+   <script>
+    const client = new Appwrite.Client();
+  const account = new Appwrite.Account(client);
+
+  client
+    .setEndpoint("https://cloud.appwrite.io/v1") // Your Appwrite Endpoint
+    .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite Project ID
+
+  // Login Form Submission
+  document.getElementById("loginForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const messageBox = document.getElementById("messageBox");
+
+    try {
+      // Attempt to log in
+      await account.createEmailSession(email, password);
+      // Redirect to dashboard
+      window.location.href = "courses.html";
+    } catch (error) {
+      messageBox.innerHTML = `<div style="color:red;">${error.message}</div>`;
+
+      // Remove message after 3 seconds
+      setTimeout(() => {
+        messageBox.innerHTML = "";
+      }, 3000);
+    }
+  });
+   </script>
 
   <script type="text/javascript">
     // Open modal in AJAX callback
@@ -63,4 +96,6 @@
       });
     });
   </script>
+
+
 </div>

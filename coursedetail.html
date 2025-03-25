@@ -205,6 +205,7 @@
       /* Right Section (25%) */
       .right-section {
         width: 25%;
+        height: fit-content;
         background: #f8f9fa;
         padding: 20px;
         border-radius: 8px;
@@ -286,6 +287,78 @@
       .active {
         display: block;
       }
+
+
+
+      @media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stack sections */
+    width: 90%;
+    padding: 15px;
+  }
+
+  .left-section,
+  .right-section {
+    width: 100%; /* Full width */
+  }
+
+  .course-header h1 {
+    font-size: 22px; /* Adjust heading size */
+  }
+
+  .course-info img {
+    max-height: 200px; /* Reduce image height */
+  }
+
+  iframe {
+    height: 250px; /* Reduce video height */
+  }
+
+  .tab-buttons {
+    flex-direction: column; /* Stack buttons */
+  }
+
+  .tab-btn {
+    width: 100%; /* Full width */
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    width: 95%;
+    padding: 10px;
+  }
+
+  .course-header h1 {
+    font-size: 18px;
+  }
+
+  .course-info img {
+    max-height: 150px;
+  }
+
+  iframe {
+    height: 200px;
+  }
+
+  .tab-btn {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .btn {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+
+
     </style>
 
     <div class="container">

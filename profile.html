@@ -260,7 +260,7 @@
         document.getElementById("authContainer").innerHTML = `
             <div class="dropdown dashboard-option">
               <a class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
-                <img src="images/background/image.png" alt="avatar" class="thumb" />
+                <img id="user-profile-pic" src="images/background/image.png" alt="avatar" class="thumb" />
                 <span class="name">Hi, ${user.name || "My Account"}</span>
               </a>
               <ul class="dropdown-menu">
@@ -270,7 +270,10 @@
   
             </div>
           `;
+          loadOfProfileUserHeader()
       }
+
+
       // Show Register/Login Buttons if Not Logged In
   
   
@@ -386,14 +389,13 @@
               document.getElementById('user-phone').textContent = "Not provided";
               document.getElementById('current-mobile').value = "Not provided";
             }
+            
 
             // Load profile picture if available
-            if (userData.profilePicId) {
+            if (userData.UserImages) {
               try {
-                const fileUrl = storage.getFileView(
-                  "67dd1d13000b5edf92bb", // Storage bucket ID (using database ID for simplicity)
-                  userData.profilePicId
-                );
+                const fileUrl = userData.UserImages;
+                
                 document.getElementById('current-profile-pic').src = fileUrl;
               } catch (fileError) {
                 console.error("Error loading profile picture:", fileError);
@@ -414,7 +416,7 @@
         document.getElementById("authContainer").innerHTML = `
           <div class="dropdown dashboard-option">
             <a class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
-              <img src="images/background/image.png" alt="avatar" class="thumb" />
+              <img id="user-profile-pic" src="images/background/image.png" alt="avatar" class="thumb" />
               <span class="name">${user.name || "My Account"}</span>
             </a>
             <ul class="dropdown-menu">
@@ -425,7 +427,38 @@
 
           </div>
         `;
+        loadOfProfileUserHeader()
       }
+
+      async function loadOfProfileUserHeader() {
+    try {
+        // Get current user
+        const user = await account.get();
+
+        console.log(user);
+        
+        
+        // Fetch user document from Appwrite Database
+        const userDoc = await databases.getDocument(
+            "67dd1d13000b5edf92bb", // ✅ Database ID
+            "67dd1d360022aa3123c1", // ✅ Collection ID
+            user.$id // ✅ Document ID (user ID)
+        );
+
+        // Get user profile image URL
+        const profileImage = userDoc.UserImages || "images/background/image.png"; // Default image
+
+        console.log(profileImage);
+        
+        
+        // Update the profile picture dynamically
+        document.getElementById("user-profile-pic").src = profileImage;
+
+    } catch (error) {
+        console.error("Failed to load user profile:", error);
+    }
+}
+
 
       // Show Register/Login Buttons if Not Logged In
       function showLoginButtons() {
@@ -448,7 +481,12 @@
       // Run Login Check When Page Loads
       document.addEventListener("DOMContentLoaded", checkLoginStatus);
     </script>
+
+<!-- <script src="./js/ProfileAuth.js"></script> -->
+
     <!--End Main Header -->
+
+    
 
     <!-- Sidebar Backdrop -->
     <div class="sidebar-backdrop"></div>
@@ -1130,86 +1168,90 @@
   </script>
 
   <script>
-    // Add event listeners for profile picture upload
-    document.getElementById('upload-pic-btn').addEventListener('click', function() {
-      document.getElementById('profile-pic-upload').click();
-    });
 
-    document.getElementById('profile-pic-upload').addEventListener('change', async function(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Button click event to open file selector
+document.getElementById('upload-pic-btn').addEventListener('click', function() {
+    document.getElementById('profile-pic-upload').click();
+});
+    
+  document.getElementById('profile-pic-upload').addEventListener('change', async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-      if (!validTypes.includes(file.type)) {
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
         showPopup('Please select a valid image file (JPG or PNG)', 'error');
         return;
-      }
+    }
 
-      // Validate file size (max 2MB)
-      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-      if (file.size > maxSize) {
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
         showPopup('Image size exceeds 2MB limit', 'error');
         return;
-      }
+    }
 
-      // Show progress container
-      const progressContainer = document.getElementById('upload-progress');
-      const progressBar = progressContainer.querySelector('.progress-bar-inner');
-      const progressPercentage = progressContainer.querySelector('.progress-percentage');
-      progressContainer.style.display = 'block';
-      progressBar.style.width = '0%';
-      progressPercentage.textContent = '0%';
+    // Show progress container
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = progressContainer.querySelector('.progress-bar-inner');
+    const progressPercentage = progressContainer.querySelector('.progress-percentage');
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressPercentage.textContent = '0%';
 
-      try {
+    try {
         // Get current user
         const user = await account.get();
         
         // Generate a unique file ID
-        const fileId = 'profile_' + user.$id + '_' + Date.now();
-        
-        // Upload file to Appwrite Storage
+        const fileId = Appwrite.ID.unique(); 
+
+        // Upload file to Appwrite Storage (Correct Bucket ID)
         const uploadResponse = await storage.createFile(
-          "67dd1d13000b5edf92bb", // Storage bucket ID (using database ID for simplicity)
-          fileId,
-          file
+            "67e238b9003a1758583a", // ✅ Correct Storage Bucket ID
+            fileId,
+            file
         );
         
         // Update progress to 50%
         progressBar.style.width = '50%';
         progressPercentage.textContent = '50%';
-        
-        // Update user document with profile picture ID
-        await databases.updateDocument(
-          "67dd1d13000b5edf92bb", // Database ID
-          "67dd1d360022aa3123c1", // Collection ID
-          user.$id, // Document ID (user ID)
-          { profilePicId: uploadResponse.$id }
+
+        // Get public URL of the uploaded image
+        const fileUrl = storage.getFileView(
+            "67e238b9003a1758583a", // ✅ Correct Storage Bucket ID
+            uploadResponse.$id
         );
-        
+
+        // Update user document with profile picture URL
+        await databases.updateDocument(
+            "67dd1d13000b5edf92bb", // ✅ Database ID
+            "67dd1d360022aa3123c1", // ✅ Collection ID
+            user.$id, // ✅ Document ID (user ID)
+            { UserImages: fileUrl } // ✅ Store image URL in UserImages field
+        );
+
         // Update progress to 100%
         progressBar.style.width = '100%';
         progressPercentage.textContent = '100%';
-        
-        // Get file URL and update profile picture
-        const fileUrl = storage.getFileView(
-          "67dd1d13000b5edf92bb", // Storage bucket ID
-          uploadResponse.$id
-        );
+
+        // Set the new profile picture
         document.getElementById('current-profile-pic').src = fileUrl;
-        
+
         // Hide progress container after a delay
         setTimeout(() => {
-          progressContainer.style.display = 'none';
+            progressContainer.style.display = 'none';
         }, 1000);
-        
+
         showPopup('Profile picture updated successfully');
-      } catch (error) {
+    } catch (error) {
         console.error('Profile picture upload error:', error);
         showPopup('Failed to upload profile picture: ' + error.message, 'error');
         progressContainer.style.display = 'none';
-      }
-    });
+    }
+});
+
   </script>
 
 </body>

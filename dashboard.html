@@ -35,7 +35,8 @@
     <span class="header-span"></span>
 
     <!-- Main Header-->
-      <header class="main-header">
+
+    <header class="main-header">
       <div class="container-fluid">
         <!-- Main box -->
         <div class="main-box">
@@ -43,8 +44,8 @@
           <div class="nav-outer">
             <div class="logo-box">
               <div class="logo">
-                <a href="index.html"><img src="images/VTA-logo.png" style="width: 60%; margin-bottom: 5px;" alt="VTA Logo"
-                    title="VTA"></a>
+                <a href="index.html"><img src="images/VTA-logo.png" style="width: 60%; margin-bottom: 5px;"
+                    alt="VTA Logo" title="VTA"></a>
               </div>
             </div>
             <nav class="nav main-menu">
@@ -73,13 +74,13 @@
         <div class="nav-outer clearfix">
           <div class="outer-box">
             <div class="login-box" id="mobauthContainer">
-              
+  
             </div>
           </div>
           <div class="mob-bar" id="menuToggle" onclick="toggleMenu()">☰</div>
           <div class="mobile-menu" id="mobileMenu">
             <ul class="navigation" id="navbar">
-              <li class="current"><a href="index.html">Home</a></li>
+              <li><a href="index.html">Home</a></li>
               <li><a href="about.html">About</a></li>
               <li><a href="404.html">Jobs</a></li>
               <li><a href="404.html">Companies</a></li>
@@ -105,11 +106,20 @@
         background: white;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
       }
+      .notification-message{
+        color: white !important;
+      }
   
       .mob-profile-dropdown ul {
         list-style: none;
         padding: 0;
         margin: 0;
+      }
+  
+      .thumb-mob {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
       }
   
       .mob-profile-dropdown ul li {
@@ -152,7 +162,9 @@
         cursor: pointer;
         font-size: 24px;
         padding: 0 10px;
+        color: #333 !important;
       }
+  
   
       .mobile-menu {
         display: none;
@@ -201,28 +213,13 @@
           display: block;
           padding: 0 10px;
         }
-      }
-    </style>
   
-    <!-- JavaScript to Handle Login State -->
-    <script>
-      // Initialize Appwrite Client
-      const client = new Appwrite.Client();
-      const account = new Appwrite.Account(client);
-  
-      client
-        .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
-        .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite project ID
-  
-      // Function to Check If User is Logged In
-      async function checkLoginStatus() {
-        try {
-          const user = await account.get(); // Get current session
-          showUserDropdown(user); // If session exists, show account menu
-        } catch (error) {
-          showLoginButtons(); // If no session, show Register/Login buttons
+        .name {
+          color: #333 !important;
         }
       }
+    </style>
+    <script>
       function toggleMenu() {
         let menu = document.getElementById("mobileMenu");
         let toggleButton = document.getElementById("menuToggle");
@@ -236,12 +233,95 @@
         }
       }
   
+      // Initialize Appwrite Client
+      const client = new Appwrite.Client();
+      const account = new Appwrite.Account(client);
+      const databases = new Appwrite.Databases(client);
+      const storage = new Appwrite.Storage(client);
+  
+      client
+        .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+        .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite project ID
+  
+      // Function to Check If User is Logged In
+      async function checkLoginStatus() {
+        try {
+          const user = await account.get(); // Get current session
+          showUserDropdown(user); // If session exists, show account menu
+  
+          // Load user profile data
+          loadUserProfile(user);
+        } catch (error) {
+          showLoginButtons(); // If no session, show Register/Login buttons
+          // Redirect to login page if not logged in
+          window.location.href = "login.html";
+        }
+      }
+  
+      // Function to load user profile data
+      async function loadUserProfile(user) {
+        try {
+          // Display user email in both places
+          document.getElementById('user-email').textContent = user.email;
+          document.getElementById('user-email-display').textContent = user.email;
+  
+          // Try to fetch additional user data from database
+          try {
+            const userData = await databases.getDocument(
+              "67dd1d13000b5edf92bb", // Database ID
+              "67dd1d360022aa3123c1", // Collection ID
+              user.$id // Document ID (user ID)
+            );
+  
+            // Display phone if available
+            if (userData.phone) {
+              document.getElementById('user-phone').textContent = userData.phone;
+              document.getElementById('current-mobile').value = userData.phone;
+            } else {
+              document.getElementById('user-phone').textContent = "Not provided";
+              document.getElementById('current-mobile').value = "Not provided";
+            }
+  
+  
+            // Load profile picture if available
+            if (userData.UserImages) {
+              try {
+                const fileUrl = userData.UserImages;
+  
+                document.getElementById('current-profile-pic').src = fileUrl;
+              } catch (fileError) {
+                console.error("Error loading profile picture:", fileError);
+              }
+            }
+          } catch (dbError) {
+            console.error("Error fetching user data:", dbError);
+            document.getElementById('user-phone').textContent = "Not available";
+            document.getElementById('current-mobile').value = "Not available";
+          }
+        } catch (error) {
+          console.error("Error loading profile:", error);
+        }
+      }
+      function toggleProfileDropdown(event) {
+          event.preventDefault(); // Prevent default link action
+          let dropdown = document.getElementById("profileDropdown");
+          let menu = document.getElementById("mobileMenu");
+          let toggleButton = document.getElementById("menuToggle");
+    
+          if (menu.classList.contains("active")) {
+            menu.classList.remove("active");
+            toggleButton.innerHTML = "☰"; // Change back to open icon
+          }
+          dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        }
+    
+  
       // Show "My Account" Dropdown if Logged In
       function showUserDropdown(user) {
         document.getElementById("mobauthContainer").innerHTML = `
               <span class="name">Hi, ${user.name || "My Account"}</span>
                 <a href="profile.html" onclick="toggleProfileDropdown(event)">
-             <span class="icon-user"></span>
+                 <img id="user-profile-pic-mob" src="images/background/image.png" alt="avatar" class="thumb-mob" />
               </a>
     
     <!-- Profile Dropdown -->
@@ -255,70 +335,62 @@
       </ul>
     </div>
           `;
-        document.getElementById("authContainer").innerHTML = `
-            <div class="dropdown dashboard-option">
-              <a class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
-                <img src="images/background/image.png" alt="avatar" class="thumb" />
-                <span class="name">Hi, ${user.name || "My Account"}</span>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="dashboard.html"><i class="fa fa-user"></i> Dashboard</a></li>
-                <li><a href="#" onclick="logout()"><i class="fa fa-sign-out"></i> Logout</a></li>
-              </ul>
   
-            </div>
-          `;
+  
+        document.getElementById("authContainer").innerHTML = `
+          <div class="dropdown dashboard-option">
+            <a class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
+              <img id="user-profile-pic" src="images/background/image.png" alt="avatar" class="thumb" />
+              <span class="name">Hi, ${user.name || "My Account"}</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="dashboard.html"><i class="fa fa-user"></i> Dashboard</a></li>
+              
+              <li><a href="#" onclick="logout()"><i class="fa fa-sign-out"></i> Logout</a></li>
+            </ul>
+  
+          </div>
+        `;
+        loadOfProfileUserHeader()
       }
-      // Show Register/Login Buttons if Not Logged In
+  
+      async function loadOfProfileUserHeader() {
+        try {
+          // Get current user
+          const user = await account.get();
+  
+          //console.log(user);
+  
+  
+          // Fetch user document from Appwrite Database
+          const userDoc = await databases.getDocument(
+            "67dd1d13000b5edf92bb", // ✅ Database ID
+            "67dd1d360022aa3123c1", // ✅ Collection ID
+            user.$id // ✅ Document ID (user ID)
+          );
+  
+          // Get user profile image URL
+          const profileImage = userDoc.UserImages || "images/background/image.png"; // Default image
+  
+          //console.log(profileImage);
+  
+  
+          // Update the profile picture dynamically
+          document.getElementById("user-profile-pic").src = profileImage;
+          document.getElementById("user-profile-pic-mob").src = profileImage;
+  
+        } catch (error) {
+          console.error("Failed to load user profile:", error);
+        }
+      }
   
   
       // Show Register/Login Buttons if Not Logged In
       function showLoginButtons() {
         document.getElementById("authContainer").innerHTML = `
-            <a href="register.html" class="home21-jp-btn login-btn bdrs30">Register</a>
-            <a href="login.html" class="home21-jp-btn login-btn bdrs30">Login</a>
-          `;
-          document.getElementById("mobauthContainer").innerHTML = `
-            <a href="login.html" class="call-modal" style="margin-bottom: 5px;"><span
-                  class="icon-user"></span></a>
-          `;
-  
-      }
-      function toggleProfileDropdown(event) {
-        event.preventDefault(); // Prevent default link action
-        let dropdown = document.getElementById("profileDropdown");
-        let menu = document.getElementById("mobileMenu");
-        let toggleButton = document.getElementById("menuToggle");
-  
-        if (menu.classList.contains("active")) {
-          menu.classList.remove("active");
-          toggleButton.innerHTML = "☰"; // Change back to open icon
-        }
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-      }
-  
-      // Close dropdown if clicking outside
-      document.addEventListener("click", function (event) {
-        let dropdown = document.getElementById("profileDropdown");
-        let loginBox = document.querySelector(".login-box a");
-  
-  
-        if (!loginBox.contains(event.target) && !dropdown.contains(event.target)) {
-          dropdown.style.display = "none";
-        }
-      });
-  
-      function toggleMenu() {
-        let menu = document.getElementById("mobileMenu");
-        let toggleButton = document.getElementById("menuToggle");
-  
-        if (menu.classList.contains("active")) {
-          menu.classList.remove("active");
-          toggleButton.innerHTML = "☰"; // Change back to open icon
-        } else {
-          menu.classList.add("active");
-          toggleButton.innerHTML = "✖"; // Change to close icon
-        }
+          <a href="register.html" class="home21-jp-btn login-btn bdrs30">Register</a>
+          <a href="login.html" class="home21-jp-btn login-btn bdrs30">Login</a>
+        `;
       }
   
       // Logout Function
@@ -334,6 +406,9 @@
       // Run Login Check When Page Loads
       document.addEventListener("DOMContentLoaded", checkLoginStatus);
     </script>
+
+  
+
     <!--End Main Header -->
 
     <!-- Sidebar Backdrop -->

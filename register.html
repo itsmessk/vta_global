@@ -447,16 +447,54 @@
                     { name, email, phone }
                   );
 
-                  // Show success message
-                  messageBox.innerHTML = `<p style="color: green;">Registration successful! Welcome, ${name}.</p>`;
+                  // Create a session first to ensure the user is logged in for verification
+                  try {
+                    const session = await account.createEmailSession(email, password);
+                    
+                    // Send verification email with correct URL that includes success parameter
+                    // We need to provide a URL for the verification callback
+                    const verificationUrl = window.location.origin + "/login.html?source=verification_email";
+                    await account.createVerification(verificationUrl);
+                    
+                    // Show success message with verification instructions
+                    messageBox.innerHTML = `
+                      <div style="background-color: #f0fff0; padding: 15px; border-radius: 5px; border: 1px solid #d0f0d0; margin-bottom: 15px;">
+                        <p style="color: green; font-weight: bold; margin-bottom: 10px;">Registration successful! Welcome, ${name}.</p>
+                        <p style="color: #0066cc;">A verification email has been sent to your email address.</p>
+                        <p style="color: #0066cc;">Please check your inbox (and spam folder) and verify your email before logging in.</p>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">You will be redirected to the login page in a few seconds.</p>
+                      </div>
+                    `;
+                    
+                    // Log out the user after sending verification
+                    await account.deleteSession('current');
+                  } catch (verificationError) {
+                    console.error("Verification email error:", verificationError);
+                    
+                    let errorMessage = verificationError.message;
+                    
+                    // Provide more helpful message for rate limit errors
+                    if (errorMessage.includes("rate limit")) {
+                      errorMessage = "Rate limit exceeded. Your account was created, but we couldn't send a verification email. Please wait a few minutes and request a verification email from the login page.";
+                    }
+                    
+                    // Still show success but with a warning about verification
+                    messageBox.innerHTML = `
+                      <div style="background-color: #fff8e8; padding: 15px; border-radius: 5px; border: 1px solid #ffe0b2; margin-bottom: 15px;">
+                        <p style="color: green; font-weight: bold; margin-bottom: 10px;">Registration successful! Welcome, ${name}.</p>
+                        <p style="color: #cc6600;">${errorMessage}</p>
+                        <p style="color: #cc6600;">You can request a verification email from the login page.</p>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">You will be redirected to the login page in a few seconds.</p>
+                      </div>
+                    `;
+                  }
 
                   document.getElementById("registerForm").reset();
 
-                  // Redirect to login page after 2 seconds
+                  // Redirect to login page after 5 seconds (increased time to read the message)
                   setTimeout(() => {
                     window.location.href = "login.html"; // Update with the correct path
-                  }, 2000);
-
+                  }, 5000);
                 } catch (error) {
                   // Handle errors
                   if (error.code === 409) {

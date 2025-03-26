@@ -245,8 +245,7 @@
           loadUserProfile(user);
         } catch (error) {
           showLoginButtons(); // If no session, show Register/Login buttons
-          // Redirect to login page if not logged in
-          window.location.href = "login.html";
+          // No redirect - allow public access to courses page
         }
       }
   
@@ -356,9 +355,9 @@
   
           // Fetch user document from Appwrite Database
           const userDoc = await databases.getDocument(
-            "67dd1d13000b5edf92bb", // ✅ Database ID
-            "67dd1d360022aa3123c1", // ✅ Collection ID
-            user.$id // ✅ Document ID (user ID)
+            "67dd1d13000b5edf92bb", // Database ID
+            "67dd1d360022aa3123c1", // Collection ID
+            user.$id // Document ID (user ID)
           );
   
           // Get user profile image URL
@@ -786,7 +785,8 @@
 
       async function handleEnroll(courseId) {
         if (!isLoggedIn) {
-          window.location.href = "register.html";
+          // Redirect to login page with a return URL parameter
+          window.location.href = "login.html?returnTo=courses.html";
           return;
         }
 

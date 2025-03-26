@@ -214,6 +214,75 @@
         .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
         .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite project ID
   
+      // Check for verification success parameter in URL
+      document.addEventListener("DOMContentLoaded", async function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const messageBox = document.getElementById("messageBox");
+        
+        // Debug: Log all URL parameters to console
+        console.log("URL Parameters:", {
+          fullUrl: window.location.href,
+          allParams: Object.fromEntries(urlParams.entries())
+        });
+        
+        // Check for Appwrite verification parameters
+        // Appwrite might use different parameter names, so let's check a few possibilities
+        const userId = urlParams.get('userId') || urlParams.get('user_id') || urlParams.get('id');
+        const secret = urlParams.get('secret') || urlParams.get('token') || urlParams.get('code');
+        const verificationSuccess = urlParams.get('verification');
+        
+        console.log("Extracted verification parameters:", { userId, secret, verificationSuccess });
+        
+        // Handle verification callback from email link
+        if (userId && secret) {
+          console.log("Verification parameters detected, attempting to verify...");
+          try {
+            // Complete the verification process
+            await account.updateVerification(userId, secret);
+            console.log("Verification successful!");
+            
+            // Add a more visible success message
+            messageBox.innerHTML = `
+              <div style="color:white; background-color: #28a745; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <strong style="font-size: 18px;">✅ Email Verified Successfully!</strong><br>
+                Your email has been verified. You can now log in to your account.
+              </div>
+            `;
+            
+            // Keep the success message visible longer
+            setTimeout(() => {
+              messageBox.innerHTML = "";
+            }, 30000); // 30 seconds
+          } catch (error) {
+            console.error("Verification error:", error);
+            
+            // Add a more visible error message
+            messageBox.innerHTML = `
+              <div style="color:white; background-color: #dc3545; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <strong style="font-size: 18px;">❌ Verification Failed</strong><br>
+                Error: ${error.message}<br>
+                <small>This could be because the link has expired or already been used.</small>
+              </div>
+            `;
+          }
+        }
+        // Show success message if verification parameter is present
+        else if (verificationSuccess === 'success') {
+          console.log("Verification success parameter detected");
+          messageBox.innerHTML = `
+            <div style="color:white; background-color: #28a745; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <strong style="font-size: 18px;">✅ Email Verified Successfully!</strong><br>
+              Your email has been verified. You can now log in to your account.
+            </div>
+          `;
+          
+          // Keep the success message visible longer
+          setTimeout(() => {
+            messageBox.innerHTML = "";
+          }, 30000); // 30 seconds
+        }
+      });
+  
       // Function to Check If User is Logged In
       async function checkLoginStatus() {
         try {
@@ -361,7 +430,7 @@
                     <input type="checkbox" id="remember">
                     <label for="remember"> Remember me</label>
                   </div>
-                  <a href="#" class="pwd">Forgot password?</a>
+                  <a href="#" id="forgot-password-link" class="pwd">Forgot password?</a>
                 </div>
               </div>
 
@@ -395,6 +464,46 @@
                 .setEndpoint("https://cloud.appwrite.io/v1") // Your Appwrite Endpoint
                 .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite Project ID
 
+              // Handle forgot password link click
+              document.getElementById("forgot-password-link").addEventListener("click", async function(event) {
+                event.preventDefault();
+                
+                const email = document.getElementById("email").value;
+                const messageBox = document.getElementById("messageBox");
+                
+                if (!email) {
+                  messageBox.innerHTML = `<div style="color:red;">Please enter your email address</div>`;
+                  
+                  // Remove message after 3 seconds
+                  setTimeout(() => {
+                    messageBox.innerHTML = "";
+                  }, 3000);
+                  return;
+                }
+                
+                try {
+                  // Call Appwrite password recovery with correct URL format
+                  const recoveryUrl = window.location.origin + "/login.html";
+                  await account.createRecovery(
+                    email,
+                    recoveryUrl
+                  );
+                  
+                  messageBox.innerHTML = `<div style="color:green;">Password reset email sent. Please check your inbox.</div>`;
+                  
+                  // Remove message after 5 seconds
+                  setTimeout(() => {
+                    messageBox.innerHTML = "";
+                  }, 5000);
+                } catch (error) {
+                  messageBox.innerHTML = `<div style="color:red;">${error.message}</div>`;
+                  
+                  // Remove message after 3 seconds
+                  setTimeout(() => {
+                    messageBox.innerHTML = "";
+                  }, 3000);
+                }
+              });
 
 
               document.getElementById("loginForm").addEventListener("submit", async function (event) {
@@ -407,8 +516,119 @@
                 try {
                   // Attempt to log in
                   const user = await account.createEmailSession(email, password);
-                  // Redirect to dashboard
-                  window.location.href = "courses.html";
+                  
+                  // Check if email is verified
+                  try {
+                    const accountDetails = await account.get();
+                    console.log("Account verification status:", accountDetails.emailVerification);
+                    
+                    if (!accountDetails.emailVerification) {
+                      // Email is not verified
+                      messageBox.innerHTML = `
+                        <div style="color:orange; background-color: #fff8e8; padding: 10px; border-radius: 5px; border: 1px solid #ffe0b2; margin-bottom: 15px;">
+                          <strong>Email Not Verified</strong><br>
+                          Your email is not verified. Please check your inbox for the verification email or request a new one below.
+                        </div>
+                        <button id="resend-verification" class="theme-btn btn-style-two">Resend Verification Email</button>
+                      `;
+                      
+                      // Add event listener for resend button
+                      document.getElementById("resend-verification").addEventListener("click", async function() {
+                        // Disable button to prevent multiple clicks
+                        this.disabled = true;
+                        this.textContent = "Sending...";
+                        
+                        try {
+                          // We need to get the user's email from the login form
+                          const email = document.getElementById("email").value;
+                          const password = document.getElementById("password").value;
+                          
+                          if (!email || !password) {
+                            messageBox.innerHTML = `
+                              <div style="color:red; background-color: #fff0f0; padding: 10px; border-radius: 5px; border: 1px solid #f0d0d0; margin-bottom: 15px;">
+                                <strong>Error:</strong> Please enter your email and password to resend verification.
+                              </div>
+                            `;
+                            
+                            // Enable button again after error
+                            this.disabled = false;
+                            this.textContent = "Resend Verification Email";
+                            return;
+                          }
+                          
+                          // Create a new session to authenticate the user
+                          await account.createEmailSession(email, password);
+                          
+                          // We need to provide a URL for the verification callback
+                          const verificationUrl = window.location.origin + "/login.html?source=verification_email";
+                          await account.createVerification(verificationUrl);
+                          
+                          messageBox.innerHTML = `
+                            <div style="color:green; background-color: #f0fff0; padding: 10px; border-radius: 5px; border: 1px solid #d0f0d0; margin-bottom: 15px;">
+                              <strong>Email Sent!</strong><br>
+                              Verification email has been sent. Please check your inbox and spam folder.
+                              <br><br>
+                              <small>Note: If you're seeing rate limit errors, please wait a few minutes before trying again.</small>
+                            </div>
+                          `;
+                          
+                          // Remove message after 10 seconds
+                          setTimeout(() => {
+                            messageBox.innerHTML = "";
+                          }, 10000);
+                          
+                          // Delete the session after sending verification
+                          await account.deleteSession('current');
+                        } catch (error) {
+                          let errorMessage = error.message;
+                          
+                          // Provide more helpful message for rate limit errors
+                          if (errorMessage.includes("rate limit")) {
+                            errorMessage = "Rate limit exceeded. Please wait a few minutes before requesting another verification email.";
+                          }
+                          
+                          messageBox.innerHTML = `
+                            <div style="color:red; background-color: #fff0f0; padding: 10px; border-radius: 5px; border: 1px solid #f0d0d0; margin-bottom: 15px;">
+                              <strong>Error:</strong> ${errorMessage}
+                            </div>
+                          `;
+                          
+                          // Enable button again after error
+                          this.disabled = false;
+                          this.textContent = "Resend Verification Email";
+                          
+                          // Remove message after 10 seconds
+                          setTimeout(() => {
+                            messageBox.innerHTML = "";
+                          }, 10000);
+                        }
+                      });
+                      
+                      // Delete the session since they shouldn't be logged in yet
+                      await account.deleteSession("current");
+                      return;
+                    }
+                    
+                    // If we get here, email is verified, redirect to dashboard or returnTo URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnTo = urlParams.get('returnTo');
+                    
+                    if (returnTo) {
+                      window.location.href = returnTo;
+                    } else {
+                      window.location.href = "courses.html";
+                    }
+                  } catch (error) {
+                    console.error("Error checking verification status:", error);
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnTo = urlParams.get('returnTo');
+                     
+                    if (returnTo) {
+                      window.location.href = returnTo;
+                    } else {
+                      window.location.href = "courses.html";
+                    }
+                  }
                 } catch (error) {
                   messageBox.innerHTML = `<div style="color:red;">${error.message}</div>`;
 
@@ -417,7 +637,6 @@
                     messageBox.innerHTML = "";
                   }, 3000);
                 }
-
               });
             </script>
           </div>

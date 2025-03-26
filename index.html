@@ -1084,8 +1084,7 @@
             loadUserProfile(user);
           } catch (error) {
             showLoginButtons(); // If no session, show Register/Login buttons
-            // Redirect to login page if not logged in
-            window.location.href = "login.html";
+            // No redirect - allow public access to index and courses pages
           }
         }
     
@@ -1451,9 +1450,32 @@
         });
     }
 
+    // Global variable to track login status
+    let isLoggedIn = false;
+
+    // Check login status
+    async function checkLoginStatusForEnrollment() {
+      try {
+        await account.get();
+        isLoggedIn = true;
+      } catch (error) {
+        isLoggedIn = false;
+      }
+    }
+
+    // Run login check when page loads
+    document.addEventListener("DOMContentLoaded", async () => {
+      await checkLoginStatusForEnrollment();
+    });
+
     // ✅ Redirect function to Course Detail page (Only for "Enroll Now" button)
     function redirectToCourseDetail(courseId) {
+      if (!isLoggedIn) {
+        // Redirect to login page with a return URL parameter
+        window.location.href = `login.html?returnTo=coursedetail.html?id=${courseId}`;
+      } else {
         window.location.href = `coursedetail.html?id=${courseId}`;
+      }
     }
 
 
@@ -1696,7 +1718,7 @@
     <div class="footer-bottom">
         <div class="auto-container">
             <div class="outer-box">
-                <div class="copyright-text">© 2024 <a href="#">VTA</a>. All Right Reserved.</div>
+                <div class="copyright-text"> 2024 <a href="#">VTA</a>. All Right Reserved.</div>
                 <div class="social-links">
                     <a href="#"><i class="fab fa-facebook-f"></i></a>
                     <a href="#"><i class="fab fa-twitter"></i></a>

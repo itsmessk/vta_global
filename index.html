@@ -53,20 +53,18 @@
             /* Image Container */
             .images-container {
                 position: relative;
-                width: 60%;
+                width: 40%;
                 margin-left: 100px;
                 padding-left: 200px;
             }
 
-            .main-image img,
-            .overlay-image img {
-                filter: drop-shadow(0 8px 50px rgba(255, 255, 255, 0.2));
-            }
+         
 
             .overlay-image {
                 position: absolute;
-                top: 30%;
-                left: -2%;
+                width: 50%;
+                top: 34%;
+                left: -3%;
                 padding: 8px;
                 border-radius: 10px;
             }
@@ -159,9 +157,9 @@
                 cursor: pointer;
             }
 
-            /* Mobile View */
-            /* Tablet View (601px - 768px) */
-            @media (max-width: 768px) {
+
+                 /* Tablet View (601px - 768px) */
+                 @media (max-width: 1200px) {
                 .instructor-section {
                     flex-direction: column;
                     padding: 40px 20px;
@@ -177,19 +175,19 @@
 
                 .main-image img,
                 .overlay-image img {
-                    width: 80%;
+                    width: 40%;
                     max-width: 350px;
                 }
 
                 .overlay-image {
-                    top: 15%;
-                    left: -5%;
+                    top: 25%;
+                    left: 3%;
                 }
 
                 /* Experience Box */
                 .experience-box {
                     top: 0%;
-                    left: 2%;
+                    left: 19%;
                     padding: 10px 15px;
                 }
 
@@ -239,6 +237,89 @@
                 }
             }
 
+            /* Mobile View */
+            /* Tablet View (601px - 768px) */
+            @media (max-width: 920px) {
+                .instructor-section {
+                    flex-direction: column;
+                    padding: 40px 20px;
+                    text-align: center;
+                }
+
+                .images-container {
+                    width: 100%;
+                    margin-left: 0;
+                    padding-left: 0;
+                    text-align: center;
+                }
+
+                .main-image img,
+                .overlay-image img {
+                    width: 40%;
+                    max-width: 350px;
+                }
+
+                .overlay-image {
+                    top: 35%;
+                    left: -5%;
+                }
+
+                /* Experience Box */
+                .experience-box {
+                    top:-2%;
+                    left: 7%;
+                    padding: 10px 15px;
+                }
+
+                .experience-box span {
+                    font-size: 14px;
+                }
+
+                .experience-box p {
+                    font-size: 12px;
+                }
+
+                .content {
+                    width: 100%;
+                    padding: 20px;
+                    text-align: center;
+                }
+
+                h1 {
+                    font-size: 28px;
+                }
+
+                p {
+                    font-size: 15px;
+                }
+
+                .about-btn {
+                    width: 80%;
+                    font-size: 14px;
+                    padding: 12px;
+                }
+
+                .stats {
+                    justify-content: center;
+                    gap: 12px;
+                }
+
+                .stat-box {
+                    font-size: 13px;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .discover-btn {
+                    width: 80%;
+                    font-size: 15px;
+                    padding: 14px;
+                }
+            }
+
+
+          
+
             /* Small Phones (381px - 600px) */
             @media (max-width: 600px) {
                 .instructor-section {
@@ -247,19 +328,19 @@
 
                 .main-image img,
                 .overlay-image img {
-                    width: 75%;
+                    width: 55%;
                     max-width: 280px;
                 }
 
                 .overlay-image {
-                    top: 20%;
+
                     left: -10%;
                 }
 
                 .experience-box {
                     top: 0%;
                     left: 0%;
-                    padding: 8px 12px;
+                    padding: 10px 15px;
                 }
 
                 .experience-box span {
@@ -314,7 +395,7 @@
                 }
 
                 .overlay-image {
-                    top: 18%;
+                    top: 37%;
                     left: -8%;
                 }
 
@@ -1504,8 +1585,8 @@
         <div class="content">
             <button class="about-btn">Get To Know About Us</button>
             <h1>Discover Top <span>Instructors</span> Around The World</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Luctus nec ullamcorper mattisBorem ipsum dolor
-                awes atnse awctetur adipis we followelit.</p>
+            <p>At VTA, we bring top instructors and learners together, offering expert-led courses across various fields.
+                Our structured lessons help you master new skills, advance your career, and explore your passions.</p>
 
             <div class="stats">
                 <div class="stat-box">

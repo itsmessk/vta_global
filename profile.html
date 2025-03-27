@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Candidate Dashboard - VTA</title>
+  <title>Candidate Profile - VTA</title>
 
   <!-- Stylesheets -->
   <link href="css/bootstrap.css" rel="stylesheet">
@@ -102,6 +102,9 @@
         border-radius: 5px;
         background: white;
         box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+      }
+      .notification-message{
+        color: white !important;
       }
   
       .mob-profile-dropdown ul {
@@ -353,7 +356,7 @@
           // Get current user
           const user = await account.get();
   
-          console.log(user);
+          //console.log(user);
   
   
           // Fetch user document from Appwrite Database
@@ -511,10 +514,13 @@
               <input type="password" id="password-for-mobile" class="form-control"
                 placeholder="Enter your password to confirm">
             </div>
+            <div id="messageBoxp"></div>
             <button id="change-mobile-btn" class="btn-update">Update Mobile Number</button>
           </div>
         </div>
       </div>
+ 
+    
 
       <!-- Profile Picture Section -->
       <div class="profile-settings">
@@ -646,7 +652,7 @@
     <div id="notification-popup" class="notification-popup">
       <div class="notification-content">
         <span id="close-popup" class="close-popup">&times;</span>
-        <p id="notification-message">Profile Preferences saved Successfully</p>
+        <p id="notification-message" style="color: #e0e0e0;">Profile Preferences saved Successfully</p>
       </div>
     </div>
 
@@ -725,7 +731,7 @@
         display: block;
         margin-top: 5px;
         font-size: 12px;
-        color: #666;
+        color:#333;
       }
 
       .btn-update {
@@ -776,7 +782,7 @@
       }
 
       .setting-item p {
-        color: #666;
+        color: #ffffff;
         margin-bottom: 20px;
       }
 
@@ -846,7 +852,7 @@
         display: block;
         margin-top: 10px;
         font-size: 12px;
-        color: #666;
+        color: #ffffff;
       }
 
       .progress-container {
@@ -963,7 +969,7 @@
         // Hide after 3 seconds
         setTimeout(() => {
           popup.classList.remove('show');
-        }, 3000);
+        }, 9000);
       }
     </script>
 
@@ -1073,15 +1079,15 @@
           try {
             // We'll try to create a new session with the provided password to verify it
             // This is a workaround since Appwrite doesn't provide a direct way to verify passwords
-            const email = document.getElementById('user-email').textContent;
-            await account.createEmailSession(email, password);
-            // If we get here, the password is correct, so we can delete this temporary session
-            await account.deleteSession('current');
-            // And create a new one
-            await account.createEmailSession(email, password);
+            const user = await account.get();
+            const userId = user.$id;
+
+            // Verify password before updating
+            await account.createEmailSession(user.email, password);
+
           } catch (authError) {
             showFieldError('password-for-mobile', 'Password is incorrect');
-            throw new Error('Authentication failed');
+            console.error(authError);
           }
 
           // Get current user
@@ -1134,7 +1140,7 @@
         
         try {
           // Call Appwrite password recovery with correct URL format
-          const recoveryUrl = window.location.origin + "/login.html";
+          const recoveryUrl = window.location.origin + "/recovery-password.html";
           await account.createRecovery(
             email,
             recoveryUrl

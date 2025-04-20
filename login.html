@@ -215,74 +215,6 @@
         .setProject("67dd08bb00338a6cdf8b"); // Replace with your Appwrite project ID
   
       // Check for verification success parameter in URL
-      document.addEventListener("DOMContentLoaded", async function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const messageBox = document.getElementById("messageBox");
-        
-        // Debug: Log all URL parameters to console
-        console.log("URL Parameters:", {
-          fullUrl: window.location.href,
-          allParams: Object.fromEntries(urlParams.entries())
-        });
-        
-        // Check for Appwrite verification parameters
-        // Appwrite might use different parameter names, so let's check a few possibilities
-        const userId = urlParams.get('userId') || urlParams.get('user_id') || urlParams.get('id');
-        const secret = urlParams.get('secret') || urlParams.get('token') || urlParams.get('code');
-        const verificationSuccess = urlParams.get('verification');
-        
-        console.log("Extracted verification parameters:", { userId, secret, verificationSuccess });
-        
-        // Handle verification callback from email link
-        if (userId && secret) {
-          console.log("Verification parameters detected, attempting to verify...");
-          try {
-            // Complete the verification process
-            await account.updateVerification(userId, secret);
-            console.log("Verification successful!");
-            
-            // Add a more visible success message
-            messageBox.innerHTML = `
-              <div style="color:white; background-color: #28a745; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                <strong style="font-size: 18px;">✅ Email Verified Successfully!</strong><br>
-                Your email has been verified. You can now log in to your account.
-              </div>
-            `;
-            
-            // Keep the success message visible longer
-            setTimeout(() => {
-              messageBox.innerHTML = "";
-            }, 30000); // 30 seconds
-          } catch (error) {
-            console.error("Verification error:", error);
-            
-            // Add a more visible error message
-            messageBox.innerHTML = `
-              <div style="color:white; background-color: #dc3545; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                <strong style="font-size: 18px;">❌ Verification Failed</strong><br>
-                Error: ${error.message}<br>
-                <small>This could be because the link has expired or already been used.</small>
-              </div>
-            `;
-          }
-        }
-        // Show success message if verification parameter is present
-        else if (verificationSuccess === 'success') {
-          console.log("Verification success parameter detected");
-          messageBox.innerHTML = `
-            <div style="color:white; background-color: #28a745; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-              <strong style="font-size: 18px;">✅ Email Verified Successfully!</strong><br>
-              Your email has been verified. You can now log in to your account.
-            </div>
-          `;
-          
-          // Keep the success message visible longer
-          setTimeout(() => {
-            messageBox.innerHTML = "";
-          }, 30000); // 30 seconds
-        }
-      });
-  
       // Function to Check If User is Logged In
       async function checkLoginStatus() {
         try {
@@ -414,7 +346,7 @@
             <!--Login Form-->
             <form id="loginForm" method="post">
               <div class="form-group">
-                <label>Email / userId</label>
+                <label>Email</label>
                 <input type="email" id="email" name="email" required placeholder="Enter your email">
               </div>
 
@@ -483,7 +415,7 @@
                 
                 try {
                   // Call Appwrite password recovery with correct URL format
-                  const recoveryUrl = window.location.origin + "/login.html";
+                  const recoveryUrl = window.location.origin + "/recovery-password.html";
                   await account.createRecovery(
                     email,
                     recoveryUrl
@@ -529,7 +461,7 @@
                           <strong>Email Not Verified</strong><br>
                           Your email is not verified. Please check your inbox for the verification email or request a new one below.
                         </div>
-                        <button id="resend-verification" class="theme-btn btn-style-two">Resend Verification Email</button>
+                        <button id="resend-verification" class="theme-btn btn-style-two mb-2 text-center">Resend Verification Email</button>
                       `;
                       
                       // Add event listener for resend button
@@ -560,7 +492,7 @@
                           await account.createEmailSession(email, password);
                           
                           // We need to provide a URL for the verification callback
-                          const verificationUrl = window.location.origin + "/login.html?source=verification_email";
+                          const verificationUrl = window.location.origin + "/verify-email.html?source=verification_email";
                           await account.createVerification(verificationUrl);
                           
                           messageBox.innerHTML = `

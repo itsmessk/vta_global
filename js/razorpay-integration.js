@@ -1,5 +1,5 @@
 /**
- * Razorpay Integration for VTA
+ * Razorpay Integration for Infoziant
  * This file handles the Razorpay payment gateway integration
  */
 
@@ -41,7 +41,7 @@ async function initializeRazorpay(courseId, courseName, coursePrice, userId, use
             name: 'Virtual Training Academy',
             description: `Enrollment for ${courseName}`,
             // Removing order_id as it's causing API errors
-            image: 'images/VTA-logo.png',
+            image: 'images/Infoziant-logo.png',
             prefill: {
                 email: userEmail,
                 contact: ''

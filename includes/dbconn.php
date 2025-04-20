@@ -3,7 +3,7 @@
 $host = "localhost";
 $username = "root";
 $password = "root";
-$dbname = "vta";
+$dbname = "Infoziant";
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $dbname);
